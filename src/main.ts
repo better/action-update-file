@@ -1,15 +1,19 @@
 import { existsSync } from 'fs';
 
-import { setFailed, setOutput, info } from '@actions/core';
+import { setFailed, setOutput, info, getInput } from '@actions/core';
+import { create as createGlob } from '@actions/glob';
 
-import { getActionOptions, getBooleanInput, getPathsToUpdate } from './util';
+import { getUpdaterOptions, getBooleanInput } from './util';
 import { Updater } from './update';
 
-function main(): void {
-	const options = getActionOptions();
+async function main(): Promise<void> {
+	const options = getUpdaterOptions();
 
-	const pathsToUpdate = getPathsToUpdate();
+	const rawPaths = getInput('file-path');
 	const isRemovingAllowed = getBooleanInput('allow-removing');
+
+	const globber = await createGlob(rawPaths);
+	const pathsToUpdate = await globber.glob();
 
 	for (const path of pathsToUpdate) {
 		const isLocalFileExists = existsSync(path);
@@ -20,24 +24,23 @@ function main(): void {
 	}
 
 	const updater = new Updater(options);
-	updater
-		.updateFiles(pathsToUpdate)
-		.then((updateResult) => {
-			if (updateResult === null) {
-				info('No files to update');
-				return;
-			}
+	try {
+		const updateResult = await updater.updateFiles(pathsToUpdate);
 
-			const { commitSha, branch } = updateResult;
+		if (updateResult === null) {
+			info('No files to update');
+			return;
+		}
 
-			setOutput('commit-sha', commitSha);
+		const { commitSha, branch } = updateResult;
 
-			const shortSha = commitSha.slice(0, 7);
-			info(`Pushed ${shortSha} to ${branch}`);
-		})
-		.catch((err: Error) => {
-			setFailed(err.message);
-		});
+		setOutput('commit-sha', commitSha);
+
+		const shortSha = commitSha.slice(0, 7);
+		info(`Pushed ${shortSha} to ${branch}`);
+	} catch (err) {
+		setFailed((err as Error).message);
+	}
 }
 
 main();
