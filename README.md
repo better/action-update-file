@@ -96,7 +96,7 @@ jobs:
 ```
 </details>
 
-See the `fast-glob` [documentation][glob-docs] for glob syntax.
+See the `@actions/glob` [documentation][glob-docs] for glob syntax.
 
 ### Inputs
 
@@ -137,7 +137,7 @@ Don't push dist files; they're updated automatically by the action itself.
 
 Licensed under the [MIT License](./LICENSE.md).
 
-[glob-docs]: https://github.com/mrmlnc/fast-glob#pattern-syntax
+[glob-docs]: https://github.com/actions/toolkit/tree/main/packages/glob#patterns
 [version-badge]: https://img.shields.io/github/v/release/test-room-7/action-update-file
 [version-url]: https://github.com/marketplace/actions/update-files-on-github
 [workflow-badge]: https://img.shields.io/github/workflow/status/test-room-7/action-update-file/Lint?label=lint
